@@ -2,6 +2,8 @@
 
 LangChain RAG tips and Tricks 01 - Self Query
 
+based on YouTube video by [Sam Witteveen](https://www.youtube.com/watch?v=f4LeWlt3T8Y&ab_channel=SamWitteveen)
+
 ## Installation
 
 Install [Langchain](https://github.com/hwchase17/langchain) and other required packages.
