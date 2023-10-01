@@ -45,7 +45,7 @@ chain = ConversationalRetrievalChain.from_llm(
 )
 
 print(
-    "Try: what is my cat's name to read from retrieval system. Default is reading from the PDF.\n"
+    "Try: what is my cat's name to read from retrieval system. Default is reading from the PDF."
 )
 
 chat_history = []
