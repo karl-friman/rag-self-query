@@ -286,7 +286,8 @@ document_contents = [doc.page_content for doc in docs]
 llm_openai = OpenAI(temperature=0)
 
 retriever = SelfQueryRetriever.from_llm(
-    llm,
+    # llm_openai, THIS WORKS
+    llm,  # THIS DOES NOT WORK
     vectorstore,
     document_content_description,
     metadata_field_info,

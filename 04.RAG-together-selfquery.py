@@ -157,7 +157,8 @@ def print_documents(docs):
 
 
 retriever = SelfQueryRetriever.from_llm(
-    llm,
+    # llm_openai, THIS WORKS
+    llm,  # THIS DOES NOT WORK
     vectorstore,
     document_content_description,
     metadata_field_info,
