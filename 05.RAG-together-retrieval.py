@@ -30,11 +30,6 @@ import together
 # set your API key
 together.api_key = os.environ["TOGETHER_API_KEY"]
 
-# list available models and descriptons
-models = together.Models.list()
-
-print(models[3]["name"]), print(models[52]["name"])
-
 together.Models.start("mistralai/Mistral-7B-Instruct-v0.1")
 
 import together
@@ -153,7 +148,7 @@ from langchain.embeddings import HuggingFaceInstructEmbeddings
 # instructor_embeddings = HuggingFaceInstructEmbeddings(
 #     model_name="hkunlp/instructor-xl", model_kwargs={"device": "cuda"}
 # )
-embeddings = HuggingFaceInstructEmbeddings(
+instructor_embeddings = HuggingFaceInstructEmbeddings(
     model_name="hkunlp/instructor-xl", model_kwargs={"device": "cpu"}
 )
 
@@ -237,5 +232,9 @@ process_llm_response(llm_response)
 qa_chain.retriever.search_type, qa_chain.retriever.vectorstore
 
 print(qa_chain.combine_documents_chain.llm_chain.prompt.template)
+
+
+print("Q: Who is Gary Oldman? ")
+print(llm("Who is Gary Oldman? "))
 
 together.Models.stop("mistralai/Mistral-7B-Instruct-v0.1")
