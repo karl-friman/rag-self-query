@@ -12,7 +12,10 @@ from langchain.retrievers.self_query.base import SelfQueryRetriever
 from langchain.chains.query_constructor.base import AttributeInfo
 from prettytable import PrettyTable
 from termcolor import colored
+import langchain
 
+langchain.verbose = True
+langchain.debug = True
 os.environ["TOGETHER_API_KEY"] = constants.TOGETHER_API_KEY
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
@@ -55,7 +58,7 @@ class TogetherLLM(LLM):
 
 
 llm = TogetherLLM(
-    model="mistralai/Mistral-7B-Instruct-v0.1", temperature=0.1, max_tokens=512
+    model="mistralai/Mistral-7B-Instruct-v0.1", temperature=0.0, max_tokens=512
 )
 llm_openai = OpenAI(temperature=0)
 
