@@ -54,7 +54,7 @@ class TogetherLLM(LLM):
     together_api_key: str = os.environ["TOGETHER_API_KEY"]
     """Together API key"""
 
-    temperature: float = 0.7
+    temperature: float = 0.2
     """What sampling temperature to use."""
 
     max_tokens: int = 512
@@ -210,31 +210,36 @@ def process_llm_response(llm_response):
 
 
 query = "What is toolformer?"
+print(query)
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 
 query = "What tools can be used with toolformer?"
+print(query)
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 
 query = "How many examples do we need to provide for each tool?"
+print(query)
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 
 query = "What are the best retrieval augmentations for LLMs?"
+print(query)
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 
 query = "What is ReAct?"
+print(query)
 llm_response = qa_chain(query)
 process_llm_response(llm_response)
 
 qa_chain.retriever.search_type, qa_chain.retriever.vectorstore
 
-print(qa_chain.combine_documents_chain.llm_chain.prompt.template)
+print("\nPrompt template: ", qa_chain.combine_documents_chain.llm_chain.prompt.template)
 
 
-print("Q: Who is Gary Oldman? ")
+print("\nQ: Who is Gary Oldman? ")
 print(llm("Who is Gary Oldman? "))
 
 together.Models.stop("mistralai/Mistral-7B-Instruct-v0.1")
