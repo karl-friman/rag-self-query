@@ -14,8 +14,8 @@ from prettytable import PrettyTable
 from termcolor import colored
 import langchain
 
-langchain.verbose = True
-langchain.debug = True
+# langchain.verbose = True
+# langchain.debug = True
 os.environ["TOGETHER_API_KEY"] = constants.TOGETHER_API_KEY
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
@@ -26,7 +26,7 @@ class TogetherLLM(LLM):
     model: str = "mistralai/Mistral-7B-v0.1"
     together_api_key: str = os.environ["TOGETHER_API_KEY"]
     temperature: float = 0.0
-    max_tokens: int = 512
+    max_tokens: int = 1024
 
     class Config:
         extra = Extra.forbid
@@ -57,9 +57,7 @@ class TogetherLLM(LLM):
         return text
 
 
-llm = TogetherLLM(
-    model="mistralai/Mistral-7B-Instruct-v0.1", temperature=0.0, max_tokens=512
-)
+llm = TogetherLLM()
 llm_openai = OpenAI(temperature=0)
 
 # embeddings = HuggingFaceInstructEmbeddings(
@@ -90,6 +88,83 @@ docs = [
             "grape": "Sémillon",
             "color": "white",
             "country": "France",
+        },
+    ),
+    Document(
+        page_content="Full-bodied red with notes of black fruit and spice",
+        metadata={
+            "name": "Penfolds Grange",
+            "year": 2017,
+            "rating": 97,
+            "grape": "Shiraz",
+            "color": "red",
+            "country": "Australia",
+        },
+    ),
+    Document(
+        page_content="Elegant, balanced red with herbal and berry nuances",
+        metadata={
+            "name": "Sassicaia",
+            "year": 2016,
+            "rating": 95,
+            "grape": "Cabernet Franc",
+            "color": "red",
+            "country": "Italy",
+        },
+    ),
+    Document(
+        page_content="Highly sought-after Pinot Noir with red fruit and earthy notes",
+        metadata={
+            "name": "Domaine de la Romanée-Conti",
+            "year": 2018,
+            "rating": 100,
+            "grape": "Pinot Noir",
+            "color": "red",
+            "country": "France",
+        },
+    ),
+    Document(
+        page_content="Crisp white with tropical fruit and citrus flavors",
+        metadata={
+            "name": "Cloudy Bay",
+            "year": 2021,
+            "rating": 92,
+            "grape": "Sauvignon Blanc",
+            "color": "white",
+            "country": "New Zealand",
+        },
+    ),
+    Document(
+        page_content="Rich, complex Champagne with notes of brioche and citrus",
+        metadata={
+            "name": "Krug Grande Cuvée",
+            "year": 2010,
+            "rating": 93,
+            "grape": "Chardonnay blend",
+            "color": "sparkling",
+            "country": "New Zealand",
+        },
+    ),
+    Document(
+        page_content="Intense, dark fruit flavors with hints of chocolate",
+        metadata={
+            "name": "Caymus Special Selection",
+            "year": 2018,
+            "rating": 96,
+            "grape": "Cabernet Sauvignon",
+            "color": "red",
+            "country": "USA",
+        },
+    ),
+    Document(
+        page_content="Exotic, aromatic white with stone fruit and floral notes",
+        metadata={
+            "name": "Jermann Vintage Tunina",
+            "year": 2020,
+            "rating": 91,
+            "grape": "Sauvignon Blanc blend",
+            "color": "white",
+            "country": "Italy",
         },
     ),
 ]
@@ -159,18 +234,17 @@ def print_documents(docs):
     print(table)
 
 
+print("Q: Who is Gary Oldman? ")
+print(llm("Who is Gary Oldman? "))
+
 retriever = SelfQueryRetriever.from_llm(
-    # llm_openai, THIS WORKS
-    llm,  # THIS DOES NOT WORK
+    llm_openai,  # THIS WORKS
+    # llm,  # THIS DOES NOT WORK
     vectorstore,
     document_content_description,
     metadata_field_info,
     verbose=True,
 )
-
-print("Q: Who is Gary Oldman? ")
-print(llm("Who is Gary Oldman? "))
-
 # Currently only openAi (llm_openai) works with SelfQueryRetriever. Why???
 # It appears the error originates from the output of the TogetherLLM model. After running the input query, it returns a JSON object which is then parsed. Based on the error message, the JSON object that has been returned by the model has some extra data that's causing the issue.
 
@@ -191,3 +265,52 @@ print(llm("Who is Gary Oldman? "))
 
 print("Q: What are some red wines")
 print_documents(retriever.get_relevant_documents("What are some red wines"))
+
+print("Q: I want a wine that has fruity nodes")
+print_documents(retriever.get_relevant_documents("I want a wine that has fruity nodes"))
+
+# This example specifies a query and a filter
+print("Q: I want a wine that has fruity nodes and has a rating above 97")
+print_documents(
+    retriever.get_relevant_documents(
+        "I want a wine that has fruity nodes and has a rating above 97"
+    )
+)
+
+print("Q: What wines come from Italy?")
+print_documents(retriever.get_relevant_documents("What wines come from Italy?"))
+
+# This example specifies a query and composite filter
+print("Q: What's a wine after 2015 but before 2020 that's all earthy")
+print_documents(
+    retriever.get_relevant_documents(
+        "What's a wine after 2015 but before 2020 that's all earthy"
+    )
+)
+
+"""## Filter K
+
+We can also use the self query retriever to specify k: the number of documents to fetch.
+
+We can do this by passing enable_limit=True to the constructor.
+"""
+
+retriever = SelfQueryRetriever.from_llm(
+    llm,
+    vectorstore,
+    document_content_description,
+    metadata_field_info,
+    enable_limit=True,
+    verbose=True,
+)
+print("Q: what are two that have a rating above 97")
+# This example only specifies a relevant query - k= 2
+print_documents(
+    retriever.get_relevant_documents("what are two that have a rating above 97")
+)
+print("Q: what are two wines that come from australia or New zealand")
+print_documents(
+    retriever.get_relevant_documents(
+        "what are two wines that come from australia or New zealand"
+    )
+)
