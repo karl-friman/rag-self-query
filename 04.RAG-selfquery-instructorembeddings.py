@@ -14,8 +14,8 @@ from prettytable import PrettyTable
 from termcolor import colored
 import langchain
 
-# langchain.verbose = True
-# langchain.debug = True
+langchain.verbose = True
+langchain.debug = True
 os.environ["TOGETHER_API_KEY"] = constants.TOGETHER_API_KEY
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
@@ -23,10 +23,10 @@ os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 class TogetherLLM(LLM):
     """Large language models from Together."""
 
-    model: str = "mistralai/Mistral-7B-v0.1"
+    model: str = "mistralai/Mistral-7B-Instruct-v0.1"
     together_api_key: str = os.environ["TOGETHER_API_KEY"]
     temperature: float = 0.0
-    max_tokens: int = 1024
+    max_tokens: int = 2600
 
     class Config:
         extra = Extra.forbid
@@ -53,7 +53,22 @@ class TogetherLLM(LLM):
             max_tokens=self.max_tokens,
             temperature=self.temperature,
         )
+        print("\n\nRAG-output:", output)
         text = output["output"]["choices"][0]["text"]
+        print("\n\nRAG-text before cleanup:", text)
+
+        # substrings to be removed from start and end
+        beginning_str = "```json\n"
+        end_str = "\n```"
+
+        # removing beginning_str and end_str from the text
+        if text.startswith(beginning_str):
+            text = text[len(beginning_str) :]
+
+        if text.endswith(end_str):
+            text = text[: -len(end_str)]
+
+        print("\n\nRAG-text after cleanup:", text)
         return text
 
 
@@ -238,8 +253,8 @@ print("Q: Who is Gary Oldman? ")
 print(llm("Who is Gary Oldman? "))
 
 retriever = SelfQueryRetriever.from_llm(
-    llm_openai,  # THIS WORKS
-    # llm,  # THIS DOES NOT WORK
+    # llm_openai,  # THIS WORKS
+    llm,  # THIS DOES NOT WORK
     vectorstore,
     document_content_description,
     metadata_field_info,
@@ -266,51 +281,51 @@ retriever = SelfQueryRetriever.from_llm(
 print("Q: What are some red wines")
 print_documents(retriever.get_relevant_documents("What are some red wines"))
 
-print("Q: I want a wine that has fruity nodes")
-print_documents(retriever.get_relevant_documents("I want a wine that has fruity nodes"))
+# print("Q: I want a wine that has fruity nodes")
+# print_documents(retriever.get_relevant_documents("I want a wine that has fruity nodes"))
 
-# This example specifies a query and a filter
-print("Q: I want a wine that has fruity nodes and has a rating above 97")
-print_documents(
-    retriever.get_relevant_documents(
-        "I want a wine that has fruity nodes and has a rating above 97"
-    )
-)
+# # This example specifies a query and a filter
+# print("Q: I want a wine that has fruity nodes and has a rating above 97")
+# print_documents(
+#     retriever.get_relevant_documents(
+#         "I want a wine that has fruity nodes and has a rating above 97"
+#     )
+# )
 
-print("Q: What wines come from Italy?")
-print_documents(retriever.get_relevant_documents("What wines come from Italy?"))
+# print("Q: What wines come from Italy?")
+# print_documents(retriever.get_relevant_documents("What wines come from Italy?"))
 
-# This example specifies a query and composite filter
-print("Q: What's a wine after 2015 but before 2020 that's all earthy")
-print_documents(
-    retriever.get_relevant_documents(
-        "What's a wine after 2015 but before 2020 that's all earthy"
-    )
-)
+# # This example specifies a query and composite filter
+# print("Q: What's a wine after 2015 but before 2020 that's all earthy")
+# print_documents(
+#     retriever.get_relevant_documents(
+#         "What's a wine after 2015 but before 2020 that's all earthy"
+#     )
+# )
 
-"""## Filter K
+# """## Filter K
 
-We can also use the self query retriever to specify k: the number of documents to fetch.
+# We can also use the self query retriever to specify k: the number of documents to fetch.
 
-We can do this by passing enable_limit=True to the constructor.
-"""
+# We can do this by passing enable_limit=True to the constructor.
+# """
 
-retriever = SelfQueryRetriever.from_llm(
-    llm,
-    vectorstore,
-    document_content_description,
-    metadata_field_info,
-    enable_limit=True,
-    verbose=True,
-)
-print("Q: what are two that have a rating above 97")
-# This example only specifies a relevant query - k= 2
-print_documents(
-    retriever.get_relevant_documents("what are two that have a rating above 97")
-)
-print("Q: what are two wines that come from australia or New zealand")
-print_documents(
-    retriever.get_relevant_documents(
-        "what are two wines that come from australia or New zealand"
-    )
-)
+# retriever = SelfQueryRetriever.from_llm(
+#     llm,
+#     vectorstore,
+#     document_content_description,
+#     metadata_field_info,
+#     enable_limit=True,
+#     verbose=True,
+# )
+# print("Q: what are two that have a rating above 97")
+# # This example only specifies a relevant query - k= 2
+# print_documents(
+#     retriever.get_relevant_documents("what are two that have a rating above 97")
+# )
+# print("Q: what are two wines that come from australia or New zealand")
+# print_documents(
+#     retriever.get_relevant_documents(
+#         "what are two wines that come from australia or New zealand"
+#     )
+# )
