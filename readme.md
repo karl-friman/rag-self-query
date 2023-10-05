@@ -2,7 +2,7 @@
 
 LangChain RAG Tips and Tricks, including Self Query
 
-Based on YouTube videos by [Sam Witteveen](https://www.youtube.com/watch?v=f4LeWlt3T8Y&ab_channel=SamWitteveen)
+Based on and inspired by YouTube videos by [Sam Witteveen](https://www.youtube.com/watch?v=f4LeWlt3T8Y&ab_channel=SamWitteveen)
 
 ## Installation
 
