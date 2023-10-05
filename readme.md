@@ -1,12 +1,12 @@
 # LangChain RAG
 
-LangChain RAG Tips and Tricks 01 - Self Query
+LangChain RAG Tips and Tricks, including Self Query
 
-based on YouTube video by [Sam Witteveen](https://www.youtube.com/watch?v=f4LeWlt3T8Y&ab_channel=SamWitteveen)
+Based on and inspired by YouTube videos by [Sam Witteveen](https://www.youtube.com/watch?v=f4LeWlt3T8Y&ab_channel=SamWitteveen)
 
 ## Installation
 
-Install [Langchain](https://github.com/hwchase17/langchain) and other required packages.
+Install [Langchain](https://github.com/hwchase17/langchain) and other required packages, some packages are mentioned inside the scripts.
 
 ```
 pip install langchain huggingface_hub openai google-search-results tiktoken chromadb lark prettytable termcolor
