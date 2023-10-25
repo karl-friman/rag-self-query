@@ -253,8 +253,8 @@ print("Q: Who is Gary Oldman? ")
 print(llm("Who is Gary Oldman? "))
 
 retriever = SelfQueryRetriever.from_llm(
-    # llm_openai,  # THIS WORKS
-    llm,  # THIS DOES NOT WORK
+    llm_openai,  # THIS WORKS
+    # llm,  # THIS DOES NOT WORK, reason according to Sam Witteveen "you will need a model that can handle JSON output well. I suggest trying some of the code models. If I am using an opensource model for this kind of task I will often fine tune it for the application first. Hope that helps".
     vectorstore,
     document_content_description,
     metadata_field_info,

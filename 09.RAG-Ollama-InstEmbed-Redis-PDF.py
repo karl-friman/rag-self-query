@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from langchain.llms import Ollama
+
 llm = Ollama(model="openhermes2-mistral", temperature=0.1)
 
 import os

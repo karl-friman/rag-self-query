@@ -38,7 +38,7 @@ for idx, model in enumerate(models):
 
 print(models[55]["name"])
 
-together.Models.start("mistralai/Mistral-7B-Instruct-v0.1")
+# together.Models.start("mistralai/Mistral-7B-Instruct-v0.1")
 
 
 class TogetherLLM(LLM):
@@ -286,8 +286,8 @@ document_contents = [doc.page_content for doc in docs]
 llm_openai = OpenAI(temperature=0)
 
 retriever = SelfQueryRetriever.from_llm(
-    # llm_openai, THIS WORKS
-    llm,  # THIS DOES NOT WORK
+    llm_openai,  # THIS WORKS
+    # llm,  # THIS DOES NOT WORK, reason according to Sam Witteveen "you will need a model that can handle JSON output well. I suggest trying some of the code models. If I am using an opensource model for this kind of task I will often fine tune it for the application first. Hope that helps".
     vectorstore,
     document_content_description,
     metadata_field_info,

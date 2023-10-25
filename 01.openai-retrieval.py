@@ -1,28 +1,30 @@
 # chatgpt.py
+
+# External imports
 import os
 import sys
-
 import openai
-from langchain.chains import ConversationalRetrievalChain, RetrievalQA
+
+# Internal module imports
+from langchain.chains import ConversationalRetrievalChain
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import DirectoryLoader, TextLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
-from langchain.llms import OpenAI
+import constants
 from langchain.vectorstores import Chroma
 
-import constants
-
+# Set API Key from constants
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
-# Enable to save to disk & reuse the model (for repeated queries on the same data)
+# Configuration: whether to save the model to disk & reuse
 PERSIST = False
 
-query = None
-if len(sys.argv) > 1:
-    query = sys.argv[1]
+# Check if a query was passed as an argument
+query = sys.argv[1] if len(sys.argv) > 1 else None
 
+# Load existing model from disk or create a new one
 if PERSIST and os.path.exists("persist"):
     print("Reusing index...\n")
     vectorstore = Chroma(
@@ -30,30 +32,31 @@ if PERSIST and os.path.exists("persist"):
     )
     index = VectorStoreIndexWrapper(vectorstore=vectorstore)
 else:
-    # loader = TextLoader("data/data.txt") # Use this line if you only need data.txt
+    # For loading data from a directory (in this case it will load the name of a cat from the pdf and the a dog from the txt):
     loader = DirectoryLoader("data/")
-    if PERSIST:
-        index = VectorstoreIndexCreator(
-            vectorstore_kwargs={"persist_directory": "persist"}
-        ).from_loaders([loader])
-    else:
-        index = VectorstoreIndexCreator().from_loaders([loader])
+    # For loading data from a single file:
+    # loader = TextLoader("data/dog.txt")
+    index_creation_args = {"persist_directory": "persist"} if PERSIST else {}
+    index = VectorstoreIndexCreator(**index_creation_args).from_loaders([loader])
 
+# Initialize the retrieval chain
 chain = ConversationalRetrievalChain.from_llm(
     llm=ChatOpenAI(model="gpt-3.5-turbo"),
     retriever=index.vectorstore.as_retriever(search_kwargs={"k": 1}),
 )
 
 print(
-    "Try: what is my cat's name to read from retrieval system. Default is reading from the PDF."
+    "Try: 'what is my cat's name?' to read from the retrieval system. Default is reading from the PDF."
 )
 
+# Main chat loop
 chat_history = []
 while True:
     if not query:
         query = input("Prompt: ")
     if query in ["quit", "q", "exit"]:
         sys.exit()
+
     result = chain({"question": query, "chat_history": chat_history})
     print(result["answer"])
 

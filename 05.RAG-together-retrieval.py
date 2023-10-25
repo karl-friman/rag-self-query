@@ -30,8 +30,6 @@ import together
 # set your API key
 together.api_key = os.environ["TOGETHER_API_KEY"]
 
-together.Models.start("mistralai/Mistral-7B-Instruct-v0.1")
-
 import logging
 from typing import Any, Dict, List, Mapping, Optional
 
