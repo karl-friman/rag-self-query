@@ -3,7 +3,6 @@
 # External imports
 import os
 import sys
-import openai
 
 # Internal module imports
 from langchain.chains import ConversationalRetrievalChain

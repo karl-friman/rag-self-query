@@ -69,49 +69,72 @@ def main():
             # Configuring Chroma vectorstore settings
             from chromadb.config import Settings
 
-            chroma_settings = Settings(
-                chroma_server_host="localhost",
-                chroma_server_http_port="8000",
-                chroma_server_ssl_enabled=False,
-            )
-            # Initializing Chroma vectorstore with document embeddings
-            vectorstore = Chroma.from_documents(
-                documents=all_splits,
-                embedding=OpenAIEmbeddings(),
-                persist_directory="vectorstore_db",
-                client_settings=chroma_settings,
-            )
+
+            try:
+                chroma_settings = Settings(
+                    chroma_server_host="http://asdf",
+                    chroma_server_http_port="8000",
+                    chroma_server_ssl_enabled=False,
+                )
+                # chroma_settings = Settings(
+                #     chroma_server_host="34.141.229.240",
+                #     chroma_server_http_port="8080",
+                #     chroma_server_ssl_enabled=False,
+                # )
+                # Initializing Chroma vectorstore with document embeddings
+                vectorstore = Chroma.from_documents(
+                    documents=all_splits,
+                    embedding=OpenAIEmbeddings(),
+                    persist_directory="vectorstore_db",
+                    client_settings=chroma_settings,
+                )
+                # Example operation to force connection
+                some_test_document_embedding = vectorstore.get("vectorstore_db")
+                print(some_test_document_embedding)
+            except Exception as e:
+                print(f"Failed to initialize Chroma vectorstore: {e}")
+                continue
 
         elif choice == "2":
             # Initializing Redis vectorstore with document embeddings
-            vectorstore = Redis.from_documents(
-                documents=all_splits,
-                embedding=OpenAIEmbeddings(),
-                redis_url="redis://localhost:6379",
-            )
+            try:
+                vectorstore = Redis.from_documents(
+                    documents=all_splits,
+                    embedding=OpenAIEmbeddings(),
+                    # redis_url="redis://localhost:6379",
+                    redis_url="redis://asdf",
+                )
+            except Exception as e:
+                print(f"Failed to initialize Redis vectorstore: {e}")
+                continue
 
         elif choice == "3":
-            # Setting up QdrantClient and creating a collection for vector storage
-            # from qdrant_client.http.models import Distance, VectorParams
-            # try:
-            #     qdrant_client = QdrantClient(url="http://localhost", port=6333)
-            #     qdrant_client.recreate_collection(
-            #         collection_name="test_collection",
-            #         vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
-            #     )
-            # except Exception as e:
-            #     print(f"Failed to initialize Qdrant client or create collection: {e}")
-            #     continue
-            collection_name = "test_collection"
+            try:
+                # !!! You will need this the first time you run this script as the collection needs to be created !!!
+                # Setting up QdrantClient and creating a collection for vector storage
+                # from qdrant_client.http.models import Distance, VectorParams
+                # try:
+                #     qdrant_client = QdrantClient(url="34.141.229.240", port=6333)
+                #     qdrant_client.create_collection(
+                #         collection_name="test_collection",
+                #         vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
+                #     )
+                # except Exception as e:
+                #     print(f"Failed to initialize Qdrant client or create collection: {e}")
+                #     continue
 
-            # Initializing Qdrant vectorstore with document embeddings
-            url = "http://localhost:6333"
-            vectorstore = Qdrant.from_documents(
-                collection_name=collection_name,
-                embedding=OpenAIEmbeddings(),
-                documents=all_splits,
-                url=url,
-            )
+                # Initializing Qdrant vectorstore with document embeddings
+                url = "http://localhost:6333"
+                # url = "http://34.141.229.240:6333"
+                vectorstore = Qdrant.from_documents(
+                    collection_name="test_collection",
+                    embedding=OpenAIEmbeddings(),
+                    documents=all_splits,
+                    url=url,
+                )
+            except Exception as e:
+                print(f"Failed to initialize Qdrant vectorstore: {e}")
+                continue
         else:
             # Handling invalid input for vector storage selection
             print(
