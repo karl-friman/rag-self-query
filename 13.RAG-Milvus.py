@@ -12,8 +12,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain import hub
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
 
-from langchain.vectorstores.qdrant import Qdrant
-from qdrant_client import QdrantClient
+from langchain.vectorstores import Milvus
 
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
@@ -33,38 +32,23 @@ def main():
     )
 
     try:
-        # !!! You will need this the first time you run this script as the collection needs to be created !!!
-        # Setting up QdrantClient and creating a collection for vector storage
-        url = "35.204.26.135"
-        # api_key= "alongpasswordbuteasytoremember!"
-
-        from qdrant_client.http.models import Distance, VectorParams
-        try:
-            # qdrant_client = QdrantClient(url=url, port=6333, api_key=api_key)
-            qdrant_client = QdrantClient(url=url, port=6333)
-            qdrant_client.delete_collection(
-                collection_name="test_collection",
-            )
-            qdrant_client = QdrantClient(url=url, port=6333)
-            qdrant_client.create_collection(
-                collection_name="test_collection",
-                vectors_config=VectorParams(size=1536, distance=Distance.COSINE),
-            )
-        except Exception as e:
-            print(f"Failed to initialize Qdrant client or create collection: {e}")
-
-        # Initializing Qdrant vectorstore with document embeddings
-        # url = "http://localhost:6333"
-        vectorstore = Qdrant.from_documents(
-            collection_name="test_collection",
-            embedding=OpenAIEmbeddings(),
+        # This is the first run with new data
+        vectorstore = Milvus.from_documents(
             documents=all_splits,
-            url=url,
-            prefer_grpc=True,
-            # api_key=api_key
+            embedding=OpenAIEmbeddings(),
+            # connection_args={"host": "127.0.0.1", "port": "19530"},
+            connection_args={"host": "localhost", "port": "19530"},
         )
+        # This is how to load an existing collection
+        vectorstore = Milvus(
+            # If you have another collection than what langchain creates, you can specify it here
+            # collection_name="collection_1",
+            embedding_function=OpenAIEmbeddings(),
+            connection_args={"host": "localhost", "port": "19530"},
+        )
+                
     except Exception as e:
-        print(f"Failed to initialize Qdrant vectorstore: {e}")
+        print(f"Failed to initialize vectorstore: {e}")
 
     # Loading the Language Model with a callback manager
     llm = Ollama(
