@@ -5,14 +5,16 @@ import os, constants
 
 from langchain.llms import Ollama
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OllamaEmbeddings
 from langchain.chains import RetrievalQA
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain import hub
 from langchain.document_loaders import DirectoryLoader, PyPDFLoader
 
-from langchain.vectorstores import Milvus
+from langchain.vectorstores.qdrant import Qdrant
+from qdrant_client import QdrantClient
 
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
@@ -32,24 +34,42 @@ def main():
     )
 
     try:
-        # This is the first run with new data
-        vectorstore = Milvus.from_documents(
+        # !!! You will need this the first time you run this script as the collection needs to be created !!!
+        # Setting up QdrantClient and creating a collection for vector storage
+        # url = "35.204.26.135"
+        url = "localhost"
+        port = "6333"
+        collection_name = "ollama-embeddings"
+        size=4096
+        # api_key= "alongpasswordbuteasytoremember!"
+
+        from qdrant_client.http.models import Distance, VectorParams
+        try:
+            # qdrant_client = QdrantClient(url=url, port=6333, api_key=api_key)
+            qdrant_client = QdrantClient(url=url, port=port)
+            qdrant_client.delete_collection(
+                collection_name=collection_name,
+            )
+            qdrant_client = QdrantClient(url=url, port=port)
+            qdrant_client.create_collection(
+                collection_name=collection_name,
+                vectors_config=VectorParams(size=size, distance=Distance.COSINE),
+            )
+        except Exception as e:
+            print(f"Failed to initialize Qdrant client or create collection: {e}")
+
+        # Initializing Qdrant vectorstore with document embeddings
+        # url = "http://localhost:6333"
+        vectorstore = Qdrant.from_documents(
+            collection_name=collection_name,
+            embedding=OllamaEmbeddings(),
             documents=all_splits,
-            embedding=OpenAIEmbeddings(),
-            # connection_args={"host": "127.0.0.1", "port": "19530"},
-            # connection_args={"host": "localhost", "port": "19530"},
-            connection_args={"host": "34.141.233.82", "port": "19530"},
+            url=url,
+            # prefer_grpc=True,
+            # api_key=api_key
         )
-        # This is how to load an existing collection
-        # vectorstore = Milvus(
-        #     # If you have another collection than what langchain creates, you can specify it here
-        #     # collection_name="collection_1",
-        #     embedding_function=OpenAIEmbeddings(),
-        #     connection_args={"host": "localhost", "port": "19530"},
-        # )
-                
     except Exception as e:
-        print(f"Failed to initialize vectorstore: {e}")
+        print(f"Failed to initialize Qdrant vectorstore: {e}")
 
     # Loading the Language Model with a callback manager
     llm = Ollama(

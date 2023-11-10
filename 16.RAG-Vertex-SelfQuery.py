@@ -8,7 +8,6 @@ Original file is located at
 """
 import os
 import constants
-import together
 import logging
 from typing import Any, Dict, List, Mapping, Optional
 from langchain.llms import OpenAI
@@ -16,88 +15,14 @@ from langchain.llms import OpenAI
 from pydantic import Extra, Field, root_validator
 
 from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain.llms.base import LLM
+from langchain.llms import VertexAI
+
 from langchain.llms.utils import enforce_stop_tokens
 from langchain.utils import get_from_dict_or_env
 from prettytable import PrettyTable
 from termcolor import colored
 
-os.environ["TOGETHER_API_KEY"] = constants.TOGETHER_API_KEY
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
-
-# set your API key
-together.api_key = os.environ["TOGETHER_API_KEY"]
-
-# print the first model's name
-models = together.Models.list()
-
-print(models[3]["name"]), print(models[52]["name"])
-
-for idx, model in enumerate(models):
-    print(idx, model["name"])
-
-print(models[55]["name"])
-
-# together.Models.start("mistralai/Mistral-7B-Instruct-v0.1")
-
-
-class TogetherLLM(LLM):
-    """Together large language models."""
-
-    model: str = "mistralai/Mistral-7B-v0.1"
-    """model endpoint to use"""
-
-    together_api_key: str = os.environ["TOGETHER_API_KEY"]
-    """Together API key"""
-
-    temperature: float = 0.0
-    """What sampling temperature to use."""
-
-    max_tokens: int = 512
-    """The maximum number of tokens to generate in the completion."""
-
-    class Config:
-        extra = Extra.forbid
-
-    @root_validator()
-    def validate_environment(cls, values: Dict) -> Dict:
-        """Validate that the API key is set."""
-        api_key = get_from_dict_or_env(values, "together_api_key", "TOGETHER_API_KEY")
-        values["together_api_key"] = api_key
-        return values
-
-    @property
-    def _llm_type(self) -> str:
-        """Return type of LLM."""
-        return "together"
-
-    def _call(
-        self,
-        prompt: str,
-        **kwargs: Any,
-    ) -> str:
-        """Call to Together endpoint."""
-        together.api_key = self.together_api_key
-        output = together.Complete.create(
-            prompt,
-            model=self.model,
-            max_tokens=self.max_tokens,
-            temperature=self.temperature,
-        )
-        text = output["output"]["choices"][0]["text"]
-        return text
-
-
-llm = TogetherLLM(
-    model="mistralai/Mistral-7B-Instruct-v0.1", temperature=0.1, max_tokens=512
-)
-
-type(llm), llm.model, llm.temperature
-
-print("Q: What are the olympics? ")
-print(llm("What are the olympics? "))
-
-# """## Self-querying Retriever"""
 
 from langchain.schema import Document
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -283,11 +208,10 @@ document_content_description = "Brief description of the wine"
 # Assuming 'document_contents' is a list of the content of each document
 document_contents = [doc.page_content for doc in docs]
 
-llm_openai = OpenAI(temperature=0)
+llm_google = VertexAI()
 
 retriever = SelfQueryRetriever.from_llm(
-    llm_openai,  # THIS WORKS
-    # llm,  # THIS DOES NOT WORK, reason according to Sam Witteveen "you will need a model that can handle JSON output well. I suggest trying some of the code models. If I am using an opensource model for this kind of task I will often fine tune it for the application first. Hope that helps".
+    llm_google,
     vectorstore,
     document_content_description,
     metadata_field_info,
@@ -297,5 +221,52 @@ retriever = SelfQueryRetriever.from_llm(
 print("Q: What are some red wines")
 print_documents(retriever.get_relevant_documents("What are some red wines"))
 
-print("Q: Who is Gary Oldman? ")
-print(llm("Who is Gary Oldman? "))
+print("Q: I want a wine that has fruity nodes")
+print_documents(retriever.get_relevant_documents("I want a wine that has fruity nodes"))
+
+# This example specifies a query and a filter
+print("Q: I want a wine that has fruity nodes and has a rating above 97")
+print_documents(
+    retriever.get_relevant_documents(
+        "I want a wine that has fruity nodes and has a rating above 97"
+    )
+)
+
+print("Q: What wines come from Italy?")
+print_documents(retriever.get_relevant_documents("What wines come from Italy?"))
+
+# This example specifies a query and composite filter
+print("Q: What's a wine after 2015 but before 2020 that's all earthy")
+print_documents(
+    retriever.get_relevant_documents(
+        "What's a wine after 2015 but before 2020 that's all earthy"
+    )
+)
+
+# """## Filter K
+
+# We can also use the self query retriever to specify k: the number of documents to fetch.
+
+# We can do this by passing enable_limit=True to the constructor.
+# """
+# llm_openai = OpenAI(temperature=0)
+# retriever = SelfQueryRetriever.from_llm(
+#     llm_openai,
+#     #llm_google, #This does not work
+#     vectorstore,
+#     document_content_description,
+#     metadata_field_info,
+#     enable_limit=True,
+#     verbose=True,
+# )
+# print("Q: what are two that have a rating above 97")
+# # This example only specifies a relevant query - k= 2
+# print_documents(
+#     retriever.get_relevant_documents("what are two that have a rating above 97")
+# )
+# print("Q: what are two wines that come from australia or New zealand")
+# print_documents(
+#     retriever.get_relevant_documents(
+#         "what are two wines that come from australia or New zealand"
+#     )
+# )
