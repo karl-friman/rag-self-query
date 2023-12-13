@@ -42,7 +42,7 @@ def main():
     #                                     embedding=OllamaEmbeddings(model="openhermes2-mistral"))
     vectorstore = Redis.from_documents(
         documents=all_splits,
-        embedding=OllamaEmbeddings(model="openhermes2-mistral"),
+        embedding=OllamaEmbeddings(model="neural-chat:7b"),
         redis_url="redis://localhost:6379",
     )
 
@@ -56,7 +56,7 @@ def main():
 
     # LLM
     llm = Ollama(
-        model="openhermes2-mistral",
+        model="neural-chat:7b",
         verbose=True,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     )

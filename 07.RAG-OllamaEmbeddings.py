@@ -38,7 +38,7 @@ def main():
     print(f"Split into {len(all_splits)} chunks")
 
     vectorstore = Chroma.from_documents(
-        documents=all_splits, embedding=OllamaEmbeddings(model="openhermes2-mistral")
+        documents=all_splits, embedding=OllamaEmbeddings(model="neural-chat:7b")
     )
 
     # Retrieve
@@ -55,7 +55,7 @@ def main():
 
     # LLM
     llm = Ollama(
-        model="openhermes2-mistral",
+        model="neural-chat:7b",
         verbose=True,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     )

@@ -14,24 +14,25 @@ from langchain.utils import get_from_dict_or_env
 from prettytable import PrettyTable
 from termcolor import colored
 
-#ToDO: replace with VertexAI
+# ToDO: replace with VertexAI
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
 from langchain.schema import Document
 from langchain.embeddings.openai import OpenAIEmbeddings
 
-#ToDO: replace with GCP solution, pgvector?
+# ToDO: replace with GCP solution, pgvector?
 from langchain.vectorstores import Chroma
 
 import langchain
 
-#ToDO: turn these 2 off as a final stage
-langchain.verbose = True
-langchain.debug = True
+# ToDO: turn these 2 off as a final stage
+# langchain.verbose = True
+# langchain.debug = True
 
 embeddings = OpenAIEmbeddings()
 
 """## Formatting and printing results"""
+
 
 def print_documents(docs):
     table = PrettyTable()
@@ -208,7 +209,7 @@ document_content_description = "Brief description of the wine"
 # Assuming 'document_contents' is a list of the content of each document
 document_contents = [doc.page_content for doc in docs]
 
-llm_google = VertexAI()
+llm_google = VertexAI(model="text-unicorn")
 
 retriever = SelfQueryRetriever.from_llm(
     llm_google,
@@ -236,14 +237,16 @@ print("Q: What wines come from Italy?")
 print_documents(retriever.get_relevant_documents("What wines come from Italy?"))
 
 # This example specifies a query and composite filter
-print("Q: What's a wine after 2015 but before 2020 that's all earthy")
+print(
+    "Q: What's a wine after 2015 but before 2020 that's all earthy and has a rating above 95"
+)
 print_documents(
     retriever.get_relevant_documents(
-        "What's a wine after 2015 but before 2020 that's all earthy"
+        "hat's a wine after 2015 but before 2020 that's all earthy and has a rating above 95"
     )
 )
 
-#ToDO: This used to work but doesn't anymore, there may have been a change to how the API works
+# ToDO: This used to work but doesn't anymore, there may have been a change to how the API works
 
 # """## Filter K
 
@@ -252,23 +255,23 @@ print_documents(
 # We can do this by passing enable_limit=True to the constructor.
 # """
 # llm_openai = OpenAI(temperature=0)
-# retriever = SelfQueryRetriever.from_llm(
-#     llm_openai,
-#     #llm_google, #This does not work
-#     vectorstore,
-#     document_content_description,
-#     metadata_field_info,
-#     enable_limit=True,
-#     verbose=True,
-# )
-# print("Q: what are two that have a rating above 97")
-# # This example only specifies a relevant query - k= 2
-# print_documents(
-#     retriever.get_relevant_documents("what are two that have a rating above 97")
-# )
-# print("Q: what are two wines that come from australia or New zealand")
-# print_documents(
-#     retriever.get_relevant_documents(
-#         "what are two wines that come from australia or New zealand"
-#     )
-# )
+retriever = SelfQueryRetriever.from_llm(
+    llm_google,
+    # llm_google, #This does not work
+    vectorstore,
+    document_content_description,
+    metadata_field_info,
+    enable_limit=True,
+    verbose=True,
+)
+print("Q: what are two that have a rating above 97")
+# This example only specifies a relevant query - k= 2
+print_documents(
+    retriever.get_relevant_documents("what are two that have a rating above 97")
+)
+print("Q: what are two wines that come from australia or New zealand")
+print_documents(
+    retriever.get_relevant_documents(
+        "what are two wines that come from australia or New zealand"
+    )
+)

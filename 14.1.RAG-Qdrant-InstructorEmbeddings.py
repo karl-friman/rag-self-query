@@ -18,16 +18,13 @@ from qdrant_client import QdrantClient
 
 os.environ["OPENAI_API_KEY"] = constants.OPENAI_API_KEY
 
+
 def main():
     # Loading documents from a specified directory
-    loader = DirectoryLoader(
-        "./data/", glob="./*.pdf", loader_cls=PyPDFLoader
-    )
+    loader = DirectoryLoader("./data/", glob="./*.pdf", loader_cls=PyPDFLoader)
     documents = loader.load()
     # Splitting documents into manageable text chunks
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1500, chunk_overlap=100
-    )
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=100)
     all_splits = text_splitter.split_documents(documents)
     print(
         f"RecursiveCharacterTextSplitter from Langchain:\nProcessed {len(documents)} documents split into {len(all_splits)} chunks"
@@ -42,10 +39,10 @@ def main():
         url = "localhost"
         port = "6333"
         collection_name = "instruct-embeddings"
-        size=768
-        # api_key= "alongpasswordbuteasytoremember!"
+        size = 768
 
         from qdrant_client.http.models import Distance, VectorParams
+
         try:
             # qdrant_client = QdrantClient(url=url, port=6333, api_key=api_key)
             qdrant_client = QdrantClient(url=url, port=port)
@@ -75,7 +72,7 @@ def main():
 
     # Loading the Language Model with a callback manager
     llm = Ollama(
-        model="openhermes2-mistral",
+        model="neural-chat:7b",
         verbose=True,
         temperature=0.0,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
@@ -94,7 +91,7 @@ def main():
         print("\n\nSources:")
         for source in llm_response["source_documents"]:
             print(source.metadata["source"])
-            
+
     # Asking a question on the Toolformer PDF
     question = "What is the conclusion summary for the Toolformer whitepaper?"
     print(f"Question: {question}")
@@ -104,6 +101,7 @@ def main():
     question = "What is the name of the cat?"
     print(f"Question: {question}")
     process_llm_response(qa_chain({"query": question}))
+
 
 if __name__ == "__main__":
     main()

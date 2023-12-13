@@ -69,10 +69,9 @@ def main():
             # Configuring Chroma vectorstore settings
             from chromadb.config import Settings
 
-
             try:
                 chroma_settings = Settings(
-                    chroma_server_host="http://asdf",
+                    chroma_server_host="localhost",
                     chroma_server_http_port="8000",
                     chroma_server_ssl_enabled=False,
                 )
@@ -101,8 +100,8 @@ def main():
                 vectorstore = Redis.from_documents(
                     documents=all_splits,
                     embedding=OpenAIEmbeddings(),
-                    # redis_url="redis://localhost:6379",
-                    redis_url="redis://asdf",
+                    redis_url="redis://localhost:6379",
+                    # redis_url="redis://asdf",
                 )
             except Exception as e:
                 print(f"Failed to initialize Redis vectorstore: {e}")
@@ -144,7 +143,7 @@ def main():
 
         # Loading the Language Model with a callback manager
         llm = Ollama(
-            model="openhermes2-mistral",
+            model="neural-chat:7b",
             verbose=True,
             callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
         )

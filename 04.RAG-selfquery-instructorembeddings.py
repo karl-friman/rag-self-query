@@ -2,7 +2,7 @@ import os
 import constants
 import together
 from typing import Any, Dict, Optional
-from pydantic import Extra, Field, root_validator
+from pydantic import BaseModel, model_validator
 from langchain.llms.base import LLM
 from langchain.llms import OpenAI
 from langchain.schema import Document
@@ -29,10 +29,10 @@ class TogetherLLM(LLM):
     max_tokens: int = 2600
 
     class Config:
-        extra = Extra.forbid
+        extra = "forbid"
 
-    @root_validator()
-    def validate_environment(cls, values: Dict) -> Dict:
+    @model_validator
+    def validate_environment(cls, values: Dict, field: Optional[str]) -> Dict:
         api_key = os.environ["TOGETHER_API_KEY"]
         values["together_api_key"] = api_key
         return values

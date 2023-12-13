@@ -4,3 +4,5 @@ persist/
 .DS_Store
 .chroma/
 .vscode/
+db/
+vectorstore_db/

@@ -44,7 +44,7 @@ def main():
 
     # Load Language Model with streaming output
     llm = Ollama(
-        model="openhermes2-mistral",
+        model="neural-chat:7b",
         verbose=True,
         callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
     )
@@ -59,7 +59,7 @@ def main():
     )
 
     # Perform QA
-    question = f"What are the latest headlines on {url}? Anything about embeddings?"
+    question = f"What are the latest headlines on {url}?"
     result = qa_chain({"query": question})
     # The result can be further processed or displayed here
     # print(result)
